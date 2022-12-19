@@ -1,0 +1,102 @@
+import java.util.Scanner;
+
+public class Main {
+    private static double[][] arr = new double[3][3];
+    private static double[][] Jacob = new double[3][3];
+    private static double[] ans = new double[3];
+    private static double[] f = new double[3];
+    private static double[] DX = new double[3];
+    private static double delta = 0.00001;
+    private static double f1(double x) {
+        return x;
+    }
+    private static double f2(double y) {
+        return y;
+    }
+    private static double f3(double z) {
+        return  z;
+    }
+    private static double f4(double x) {
+        return x*x;
+    }
+    private static double f5(double y) {
+        return y*y;
+    }
+    private static double f6(double z) {
+        return z*z;
+    }
+    private  static double f7(double x) {
+        return x*x*x;
+    }
+    private static double f8(double y) {
+        return y*y*y;
+    }
+    private static double f9(double z) {
+        return z*z*z;
+    }
+    private static void  InitArr(double x) {
+        arr[0][0] = f1(x);
+        arr[0][1] = f2(x);
+        arr[0][2] = f3(x);
+        arr[1][0] = f4(x);
+        arr[1][1] = f5(x);
+        arr[1][2] = f6(x);
+        arr[2][0] = f7(x);
+        arr[2][1] = f8(x);
+        arr[2][2] = f9(x);
+    }
+    private static double InitJacob(double type) {
+        double res = 0;
+        if(type == 1) {
+            res = (f1(ans[0] + delta) - f1(ans[0])) / delta;
+        }else  if(type == 2) {
+            res = (f2(ans[1] + delta) - f2(ans[1])) / delta;
+        }else  if(type == 3) {
+            res = (f3(ans[2] + delta) - f3(ans[2])) / delta;
+        }else if(type == 4) {
+            res = (f4(ans[0] + delta) - f4(ans[0])) / delta;
+        }else if(type == 5) {
+            res = (f5(ans[1] + delta) - f5(ans[1])) / delta;
+        }else if(type == 6) {
+            res = (f6(ans[2] + delta) - f6(ans[2])) / delta;
+        }else if(type == 7) {
+            res = (f7(ans[0] + delta) - f7(ans[0])) / delta;
+        }else if(type == 8) {
+            res = (f8(ans[1] + delta) - f8(ans[1])) / delta;
+        }else if(type == 9) {
+            res = (f9(ans[2] + delta) - f9(ans[2])) / delta;
+        }
+        return res;
+    }
+    private static void InitAns() {
+        for (int i = 0; i < ans.length; i++) {
+            ans[i] = i;
+        }
+    }
+    private static void InitF() {
+        for (int i = 0; i < 3; i++) {
+            int sum = 0;
+            sum += f1(ans[0]);
+            sum += f2(ans[1]);
+            sum += f3(ans[2]);
+            f[i] = sum;
+        }
+        for (int i = 0; i < f.length; i++) {
+            f[i] = -1*f[i];
+        }
+    }
+    private static void NewtonsMethod() {
+        InitAns();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                Jacob[i][j] = InitJacob(i + 3 * j);
+            }
+        }
+        InitF();
+        
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+    }
+}
