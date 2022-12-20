@@ -7,33 +7,35 @@ public class Main {
     private static double[] ans = new double[3];
     private static double[] f = new double[3];
     private static double[] DX = new double[3];
-    private static double delta = 0.00001;
+    private static double delta = 0.001;
+    private static double eps = 0.005;
+    private static double max = Double.MIN_VALUE;
     private static double f1(double x) {
-        return x;
+        return x*x;
     }
     private static double f2(double y) {
-        return y;
+        return y*y;
     }
     private static double f3(double z) {
-        return  z;
+        return  z*z - 1;
     }
     private static double f4(double x) {
-        return x*x;
+        return 2*x*x;
     }
     private static double f5(double y) {
         return y*y;
     }
     private static double f6(double z) {
-        return z*z;
+        return -4*z;
     }
     private  static double f7(double x) {
-        return x*x*x;
+        return 3*x*x;
     }
     private static double f8(double y) {
-        return y*y*y;
+        return -4*y;
     }
     private static double f9(double z) {
-        return z*z*z;
+        return z*z;
     }
     private static void  InitArr(double x) {
         arr[0][0] = f1(x);
@@ -50,8 +52,10 @@ public class Main {
         double res = 0;
         if(type == 1) {
             res = (f1(ans[0] + delta) - f1(ans[0])) / delta;
+            System.out.println(f1(ans[0] + delta) + " " +f1(ans[0]) + " " + delta );
         }else  if(type == 2) {
             res = (f2(ans[1] + delta) - f2(ans[1])) / delta;
+            System.out.println(f2(ans[0] + delta) + " " +f2(ans[0]) + " " + delta );
         }else  if(type == 3) {
             res = (f3(ans[2] + delta) - f3(ans[2])) / delta;
         }else if(type == 4) {
@@ -70,21 +74,14 @@ public class Main {
         return res;
     }
     private static void InitAns() {
-        for (int i = 0; i < ans.length; i++) {
-            ans[i] = i;
-        }
+        ans[0] = 0.5;
+        ans[1] = 0.5;
+        ans[2] = 0.5;
     }
     private static void InitF() {
-        for (int i = 0; i < 3; i++) {
-            int sum = 0;
-            sum += f1(ans[0]);
-            sum += f2(ans[1]);
-            sum += f3(ans[2]);
-            f[i] = sum;
-        }
-        for (int i = 0; i < f.length; i++) {
-            f[i] = -1*f[i];
-        }
+        f[0] = f1(ans[0]) + f2(ans[1]) + f3(ans[2]);
+        f[1] = f4(ans[0]) + f5(ans[1]) + f6(ans[2]);
+        f[2] = f7(ans[0]) + f8(ans[1]) + f9(ans[2]);
     }
     private static double getDop(int row,int col) {
         double[][] temp = new double[2][2];
@@ -141,7 +138,7 @@ public class Main {
     }
 
     private static double getDeterminant2(double[][] temp) {
-        return temp[0][0] * temp[2][2] - temp[0][1] * temp[1][0];
+        return temp[0][0] * temp[1][1] - temp[0][1] * temp[1][0];
     }
 
     private static void getRotateFromJacob() {
@@ -155,6 +152,7 @@ public class Main {
         Rotate[2][1] = getDop(2,3);
         Rotate[2][2] = getDop(3,3);
         double det = getDeterminant(Jacob);
+        System.out.println(det + "  det");
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 Rotate[i][j] *= 1 / det;
@@ -163,21 +161,58 @@ public class Main {
     }
 
     private static double getDeterminant(double[][] jacob) {
-        return Jacob[0][0] * Jacob[1][1] * Jacob[2][2] + Jacob[0][1] * Jacob[1][2] * Jacob[2][0] + Jacob[1][0] * Jacob[2][1] * Jacob[0][2] - Jacob[2][0] * Jacob[1][1] * Jacob[2][0] - Jacob[0][0] * Jacob[2][1] * Jacob[1][2] - Jacob[0][1] * Jacob[1][0] * Jacob[2][2];
+        return Jacob[0][0] * Jacob[1][1] * Jacob[2][2] + Jacob[0][1] * Jacob[1][2] * Jacob[2][0] + Jacob[1][0] * Jacob[2][1] * Jacob[0][2] - Jacob[2][0] * Jacob[1][1] * Jacob[0][2] - Jacob[0][0] * Jacob[2][1] * Jacob[1][2] - Jacob[0][1] * Jacob[1][0] * Jacob[2][2];
+    }
+    private static void prepareFor() {
+        InitAns();
+        Jacob[0][0] = InitJacob(1);
+        Jacob[0][1] = InitJacob(2);
+        Jacob[0][2] = InitJacob(3);
+        Jacob[1][0] = InitJacob(4);
+        Jacob[1][1] = InitJacob(5);
+        Jacob[1][2] = InitJacob(6);
+        Jacob[2][0] = InitJacob(7);
+        Jacob[2][1] = InitJacob(8);
+        Jacob[2][2] = InitJacob(9);
+        InitF();
+        getRotateFromJacob();
+        for (int i = 0; i < DX.length; i++) {
+            double sum = 0;
+            for (int j = 0; j < 3; j++) {
+                sum += Rotate[i][j] * f[j];
+            }
+            DX[i] = sum;
+            ans[i] -= DX[i];
+        }
+        max = getMax(DX);
     }
 
     private static void NewtonsMethod() {
-        InitAns();
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                Jacob[i][j] = InitJacob(i + 3 * j);
+        prepareFor();
+        if(max < eps) {
+            for (int i = 0; i < DX.length; i++) {
+                System.out.println(DX[i] + " ");
+            }
+        } else {
+            while (max < eps) {
+                prepareFor();
+            }
+            for (int i = 0; i < DX.length; i++) {
+                System.out.print(ans[i] + " ");
             }
         }
-        InitF();
-        
+    }
+    private static double getMax(double[] arr) {
+        double max = Double.MIN_VALUE;
+        for (int i = 0; i < arr.length; i++) {
+            if(max < Math.abs(arr[i])) {
+                max = arr[i];
+            }
+        }
+        return max;
     }
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-
+        NewtonsMethod();
     }
 }
