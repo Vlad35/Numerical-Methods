@@ -52,10 +52,8 @@ public class Main {
         double res = 0;
         if(type == 1) {
             res = (f1(ans[0] + delta) - f1(ans[0])) / delta;
-            System.out.println(f1(ans[0] + delta) + " " +f1(ans[0]) + " " + delta );
         }else  if(type == 2) {
             res = (f2(ans[1] + delta) - f2(ans[1])) / delta;
-            System.out.println(f2(ans[0] + delta) + " " +f2(ans[0]) + " " + delta );
         }else  if(type == 3) {
             res = (f3(ans[2] + delta) - f3(ans[2])) / delta;
         }else if(type == 4) {
@@ -152,7 +150,6 @@ public class Main {
         Rotate[2][1] = getDop(2,3);
         Rotate[2][2] = getDop(3,3);
         double det = getDeterminant(Jacob);
-        System.out.println(det + "  det");
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 Rotate[i][j] *= 1 / det;
@@ -164,7 +161,6 @@ public class Main {
         return Jacob[0][0] * Jacob[1][1] * Jacob[2][2] + Jacob[0][1] * Jacob[1][2] * Jacob[2][0] + Jacob[1][0] * Jacob[2][1] * Jacob[0][2] - Jacob[2][0] * Jacob[1][1] * Jacob[0][2] - Jacob[0][0] * Jacob[2][1] * Jacob[1][2] - Jacob[0][1] * Jacob[1][0] * Jacob[2][2];
     }
     private static void prepareFor() {
-        InitAns();
         Jacob[0][0] = InitJacob(1);
         Jacob[0][1] = InitJacob(2);
         Jacob[0][2] = InitJacob(3);
@@ -186,15 +182,23 @@ public class Main {
         }
         max = getMax(DX);
     }
+    private static void Print(double[] arr) {
+        System.out.println();
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + " ");
+        }
+        System.out.println();
+    }
 
     private static void NewtonsMethod() {
+        InitAns();
         prepareFor();
         if(max < eps) {
             for (int i = 0; i < DX.length; i++) {
                 System.out.println(DX[i] + " ");
             }
         } else {
-            while (max < eps) {
+            while (max > eps) {
                 prepareFor();
             }
             for (int i = 0; i < DX.length; i++) {
