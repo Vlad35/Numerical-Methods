@@ -10,33 +10,34 @@ public class Main {
     private static double delta = 0.001;
     private static double eps = 0.005;
     private static double max = Double.MIN_VALUE;
-    private static double f1(double x) {
-        return 3*x;
+    //Answer is: -34.598935226264416,-31.020408163265305,-21.811002661934342
+    /*private static double f1(double x) {
+        return -3*x;
     }
     private static double f2(double y) {
         return 2*y;
     }
     private static double f3(double z) {
-        return  -z - 8;
+        return -4*z-129;
     }
     private static double f4(double x) {
-        return x;
+        return 32*x;
     }
     private static double f5(double y) {
-        return -y;
+        return 3*y;
     }
     private static double f6(double z) {
-        return z + 2;
+        return -57*z-43;
     }
     private  static double f7(double x) {
-        return 2*x;
+        return 8*x;
     }
     private static double f8(double y) {
-        return -3*y;
+        return -11*y+1;
     }
     private static double f9(double z) {
-        return -5*z - 1;
-    }
+        return 3*z;
+    }*/
     //Answer is: 1,2,-1
     /*private static double f1(double x) {
         return 3*x;
@@ -66,7 +67,6 @@ public class Main {
         return -5*z - 1;
     }*/
     //Answer : 0.785,0.4966,0.3699
-    /*
     private static double f1(double x) {
         return x*x;
     }
@@ -94,7 +94,6 @@ public class Main {
     private static double f9(double z) {
         return z*z;
     }
-    */
     private static void  InitArr(double x) {
         arr[0][0] = f1(x);
         arr[0][1] = f2(x);
@@ -130,9 +129,9 @@ public class Main {
         return res;
     }
     private static void InitAns() {
-        ans[0] = 0.5;
-        ans[1] = 0.5;
-        ans[2] = 0.5;
+        ans[0] = 1;
+        ans[1] = 1;
+        ans[2] = 1;
     }
     private static void InitF() {
         f[0] = f1(ans[0]) + f2(ans[1]) + f3(ans[2]);
