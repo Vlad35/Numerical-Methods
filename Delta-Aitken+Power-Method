@@ -1,0 +1,36 @@
+import numpy as np
+
+# Read input.txt from file
+with open("data/input.txt", "r") as f_in:
+    # Read matrix dimension
+    n = int(f_in.readline().strip())
+
+    # Read matrix entries
+    matrix = np.zeros((n, n))
+    for i in range(n):
+        matrix[i] = list(map(float, f_in.readline().strip().split()))
+
+# Power method with Aitken delta process
+x = np.ones(n) / n  # initial guess
+lambda_prev = 0
+for i in range(100):
+    # Power iteration
+    x = matrix.dot(x)
+    lambda_curr = x.max()
+    x = x / lambda_curr
+
+    # Aitken delta process
+    if i >= 2:
+        lambda_prev_prev = lambda_hist[-2]
+        lambda_hat = lambda_curr - (lambda_curr - lambda_prev) ** 2 / (lambda_prev - 2 * lambda_curr + lambda_prev_prev)
+        if abs(lambda_hat - lambda_curr) < 1e-6:
+            break
+        lambda_curr = lambda_hat
+
+    # Update lambda history
+    lambda_hist = [lambda_prev, lambda_curr]
+    lambda_prev = lambda_curr
+
+# Write output.txt to file
+with open("data/output.txt", "w") as f_out:
+    f_out.write("{:.6f}\n".format(lambda_curr))
