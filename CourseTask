@@ -1,0 +1,168 @@
+import os
+
+# Create the Output directory if it does not exist
+if not os.path.exists("Output"):
+    os.mkdir("Output")
+
+for i in range(1, 121):
+    # Open the input file for reading
+    input_file = open(f"CourseTasks/dataset_{i}.txt", "r")
+
+    # Create a list to hold the updated lines
+    updated_lines = []
+
+    # Compute the average value
+    values = []
+    for j, line in enumerate(input_file):
+        if j < 1999:
+            # Skip the first 1999 lines
+            updated_lines.append(line)
+        elif j <= 13500:
+            # Extract the columns from the line
+            columns = line.strip().split()
+            try:
+                value = float(columns[2])
+            except ValueError:
+                updated_lines.append(line)
+                continue
+
+            # Subtract the average value from the third column
+            values.append(value)
+            updated_value = value - sum(values) / len(values)
+
+            # Update the value in the third column
+            columns[2] = f"{updated_value:.6f}"
+            updated_line = "\t".join(columns) + "\n"
+            updated_lines.append(updated_line)
+        else:
+            break
+
+    # Close the input file
+    input_file.close()
+
+    # Overwrite the input file with the updated lines
+    with open(f"CourseTasks/dataset_{i}.txt", "w") as output_file:
+        output_file.writelines(updated_lines)
+
+import scipy.signal as signal
+
+def DITDRMS(y, x, t1, t2):
+    """
+    Normalized squared error between the signal y and the baseline x
+    """
+    dy = y - x
+    numerator = np.trapz(dy**2, dx=1.0)
+    denominator = np.trapz(x**2, dx=1.0)
+    return numerator / denominator
+
+def DIXCOR(y, x):
+    """
+    Cross-correlation coefficient of the baseline and the response
+    """
+    rxy = signal.correlate(y, x, mode='valid')
+    rxy0 = rxy[int(len(rxy)/2)]
+    return 1 / rxy0
+
+def DImaxXCOR(y, x):
+    """
+    Maximum value of the cross-correlation
+    """
+    rxy = signal.correlate(y, x, mode='valid')
+    return 1 / np.max(rxy)
+
+def DIENV(y, x, t1, t2, method='hilbert'):
+    """
+    Difference between the envelope of the signal and the baseline
+    """
+    if method == 'hilbert':
+        Y = np.abs(signal.hilbert(y))
+        X = np.abs(signal.hilbert(x))
+    elif method == 'cwt':
+        scales = np.arange(1, len(y))
+        _, Y, _ = signal.cwt(y, signal.morlet, scales)
+        _, X, _ = signal.cwt(x, signal.morlet, scales)
+    else:
+        raise ValueError('Invalid envelope method')
+    dy = Y - X
+    numerator = np.trapz(dy**2, dx=1.0)
+    denominator = np.trapz(X**2, dx=1.0)
+    return numerator / denominator
+
+
+import numpy as np
+import os
+
+# Define the path to the directory containing the dataset files
+data_path = 'CourseTasks/'
+
+# Define the path and filename for the output file
+output_path = 'NoDamage/'
+output_file = 'DamageIndicesOutput.txt'
+
+# Loop over all 120 dataset files
+for i in range(1, 121):
+    # Define the filename for the current dataset file
+    filename = 'dataset_' + str(i) + '.txt'
+
+    # Load the data from the current dataset file
+    try:
+        data = np.loadtxt(os.path.join(data_path, filename), skiprows=2000)
+    except ValueError:
+        print(f'Skipping {filename} due to ValueError while reading data')
+        continue
+
+    # Compute the five damage indices for the current data
+    dt = data[1, 0] - data[0, 0]  # Time step
+    t1 = int(2 / dt)  # Start time for integration
+    t2 = int(4 / dt)  # End time for integration
+    x = data[:, 1]  # Baseline signal
+    y = data[:, 2]  # Measured signal
+    DITDRMS = np.sqrt(np.trapz((y[t1:t2] - x[t1:t2]) ** 2) / np.trapz(x[t1:t2] ** 2))
+    rxy = np.correlate(x, y, mode='full') / np.sqrt(np.sum(x ** 2) * np.sum(y ** 2))
+    DIXCOR = rxy[len(rxy) // 2]
+    DImaxXCOR = np.max(rxy)
+    from scipy.signal import hilbert
+
+    Xhilb = np.abs(hilbert(x))
+    Yhilb = np.abs(hilbert(y))
+    DIENV = np.sqrt(np.trapz((Yhilb[t1:t2] - Xhilb[t1:t2]) ** 2) / np.trapz(Xhilb[t1:t2] ** 2))
+
+    DIIMBAL = np.mean(np.abs(y - x)) / np.mean(np.abs(x))
+
+    # Save the damage indices for the current dataset to the output file
+    with open(os.path.join(output_path, "DamageIndicesOutput.txt"), 'a') as f:
+        f.write(f'{DITDRMS:.6f} {DIXCOR:.6f} {DImaxXCOR:.6f} {DIENV:.6f} {DIIMBAL:.6f}\n')
+
+# Define the starting value of i as 0.01
+i = 0.01
+
+# Open the input file for reading
+with open('NoDamage/DamageIndicesOutput.txt', 'r') as input_file:
+    # Read the contents of the file into a list of lines
+    lines = input_file.readlines()
+
+# Open the output file for writing
+with open('NoDamage/DamageIndicesOutput.txt', 'w') as output_file:
+    # Process each line in the list
+    for line in lines:
+        # Split the line into a list of values
+        values = line.strip().split(' ')
+
+        # Convert the values to float
+        values = [float(value) for value in values]
+
+        # Define the maximum value as max(values) * 1.i
+        #max_value = max(values) * (1 + i)
+        max_value = 1
+
+        # Increment i by 0.001 for the next line
+        i += 0.001
+
+        # Divide each value in the list by the maximum value
+        normalized_values = [value / max_value for value in values]
+
+        # Convert the normalized values to strings and join them with spaces
+        normalized_line = ' '.join([str(value) for value in normalized_values])
+
+        # Write the normalized line to the output file
+        output_file.write(normalized_line + '\n')
