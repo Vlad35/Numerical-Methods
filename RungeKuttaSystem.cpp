@@ -3,17 +3,22 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
+
 using namespace std;
-double f1(double x, double y, double z) {
-    return 2 * z - y;
-    //return x*z-2*x*y + 0.8;
+
+double f(double x, double y) {
+    return 4 * y - 3 * x + exp(3 * x) / pow(x, 2 * x) + 1;
 }
-double f2(double x, double y, double z) {
-    return 4 * z - 3 * y + exp(3 * x) / (exp(2 * x) + 1);
-    //return z;
+
+double exact_x(double t) {
+    return exp(t) + 2 * exp(2 * t) - exp(t) * log(exp(2 * t) + 1) + 2 * exp(2 * t) * atan(exp(t));
 }
-int main()
-{
+
+double exact_y(double t) {
+    return exp(t) + 3 * exp(2 * t) - exp(t) * log(exp(2 * t) + 1) + 3 * exp(2 * t) * atan(exp(t));
+}
+
+int main() {
     setlocale(LC_ALL, "rus");
     int i, j;
     double a, b, h;
@@ -22,45 +27,35 @@ int main()
     cout << "Введите величину шага " << endl;
     cin >> h;
     int n = (b - a) / h + 1;
-    double* x, * y, * del, * z;
+    double *x, *y, *del, *k1, *k2;
     x = new double[n + 1];
     y = new double[n + 1];
     del = new double[n + 1];
-    z = new double[n + 1];
-    fstream file1, file2;
-    file1.open("file1.txt");
-    file2.open("file2.txt");
+    k1 = new double[n + 1];
+    k2 = new double[n + 1];
+    ofstream x_file("x_loop.txt"), y_file("y_loop.txt"), exact_x_file("exact_x.txt"), exact_y_file("exact_y.txt");
     x[0] = a;
-    cout << "Введите начальные значения функций " << endl;
-    cin >> y[0] >> z[0];
-    for (i = 1; i <= n - 1; i++)
-    {
+    cout << "Введите начальное значение функции " << endl;
+    cin >> y[0];
+    x_file << x[0] << endl;
+    y_file << y[0] << endl;
+    exact_x_file << exact_x(a) << endl;
+    exact_y_file << exact_y(a) << endl;
+    for (i = 1; i <= n - 1; i++) {
         x[i] = a + i * h;
-
-        double k1 = h * f1(x[i - 1], y[i - 1], z[i - 1]);
-        double l1 = h * f2(x[i - 1], y[i - 1], z[i - 1]);
-
-        double k2 = h * f1(x[i - 1] + h / 2, y[i - 1] + k1 / 2, z[i - 1] + l1 / 2);
-        double l2 = h * f2(x[i - 1] + h / 2, y[i - 1] + k1 / 2, z[i - 1] + l1 / 2);
-
-
-
-        y[i] = y[i - 1] + (k1 + 2 * k2) / 6;
-        z[i] = z[i - 1] + (l1 + 2 * l2) / 6;
-        cout << x[i] << " " << y[i] << " " << z[i] << endl;
-
-        file1 << y[i] << endl;
-        file2 << z[i] << endl;
-        // cout << i << " " << x[i] << " " << y[i] << " " << del[i] << " " << f(x[i], y[i]) << endl;
-    };
-    file1.close();
-    file2.close();
+        k1[i] = h * f(x[i - 1], y[i - 1]);
+        k2[i] = h * f(x[i - 1] + h / 2, y[i - 1] + k1[i] / 2);
+        y[i] = y[i - 1] + k2[i];
+        x_file << x[i] << endl;
+        y_file << y[i] << endl;
+        exact_x_file << exact_x(x[i]) << endl;
+        exact_y_file << exact_y(x[i]) << endl;
+    }
+    x_file.close();
+    y_file.close();
+    exact_x_file.close();
+    exact_y_file.close();
     system("pause");
     return 0;
 }
-double f(double x, double y)
-{
-    return 2 * x - 3 + y;
-    //return (y/x)+(x*cos(x));
-    //return (4-x*y-x*x*y*y)/(x*x);
-}
+
